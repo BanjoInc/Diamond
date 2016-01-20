@@ -130,7 +130,7 @@ class KafkaCollector(diamond.collector.Collector):
         metrics = {}
         for attrib in attributes.getiterator(tag='Attribute'):
             if 'FetcherLagMetrics' in objectname:
-                atype = float
+                atype = 'float'
             else:
                 atype = attrib.get('type')
 
