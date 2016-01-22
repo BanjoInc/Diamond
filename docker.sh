@@ -31,7 +31,7 @@ fi
 docker exec -u root $DOCKER_CONTAINER_ID make rpm
 
 log 'Copying build artifacts out of container'
-docker cp $DOCKER_CONTAINER_ID:$DOCKER_WORK_DIR/dist/ . || exit 1
+docker cp $DOCKER_CONTAINER_ID:$DOCKER_WORK_DIR/dist publish-to-s3 || exit 1
 
 log 'Stopping container'
 docker stop $DOCKER_CONTAINER_ID || exit 1
