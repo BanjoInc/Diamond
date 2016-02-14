@@ -114,18 +114,18 @@ class KafkaCollector(diamond.collector.Collector):
             # name="LeaderElectionRateAndTimeMs"
             key_prefix = ''
             for i, item in enumerate(objectname.split(',')):
-              if i == 0:
-                  key_prefix = item.split('=')[1]
-                  if '"' in key_prefix:
-                      key_prefix = key_prefix.split('"')[1]
-                  if "," in key_prefix:
-                      key_prefix = key_prefix.split(',')[0]
-              else:
-                  key = item.split('=')[1]
-                  if key:
-                      if '"' in key:
-                          key = key.split('"')[1]
-                      key_prefix = key_prefix + '.' + key.replace('.', '_')
+                if i == 0:
+                    key_prefix = item.split('=')[1]
+                    if '"' in key_prefix:
+                        key_prefix = key_prefix.split('"')[1]
+                    if "," in key_prefix:
+                        key_prefix = key_prefix.split(',')[0]
+                else:
+                    key = item.split('=')[1]
+                    if key:
+                        if '"' in key:
+                            key = key.split('"')[1]
+                        key_prefix = key_prefix + '.' + key.replace('.', '_')
 
         metrics = {}
         for attrib in attributes.getiterator(tag='Attribute'):
