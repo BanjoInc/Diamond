@@ -44,6 +44,9 @@ class KafkaConsumerLagCollector(diamond.collector.ProcessCollector):
         topic = self.config.get('topic')
         cluster_name = '-'.join(zookeeper.split('/')[1:]).replace('-', '_')
 
+        if not isinstance(consumer_groups, list):
+            consumer_groups = [consumer_groups]
+
         for consumer_group in consumer_groups:
             try:
                 cmd = [
