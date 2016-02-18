@@ -45,7 +45,7 @@ class SidekiqCollector(diamond.collector.Collector):
             'host': 'localhost',
             'ports': '6379',
             'password': None,
-            'databases': 1,
+            'databases': 16,
             'sentinel_ports': None,
             'sentinel_name': None,
             'cluster_prefix': None
@@ -109,10 +109,16 @@ class SidekiqCollector(diamond.collector.Collector):
             self.log.error('Unable to import module redis')
             return {}
 
-        for redis_client, port, db in self.get_redis_client():
-            self.publish_queue_length(redis_client, port, db)
-            self.publish_schedule_length(redis_client, port, db)
-            self.publish_retry_length(redis_client, port, db)
+        try:
+            for redis_client, port, db in self.get_redis_client():
+                try:
+                    self.publish_queue_length(redis_client, port, db)
+                    self.publish_schedule_length(redis_client, port, db)
+                    self.publish_retry_length(redis_client, port, db)
+                except Exception as execption:
+                    self.log.error(execption)
+        except Exception as execption:
+            self.log.error(execption)
 
     def publish_schedule_length(self, redis_client, port, db):
         """
