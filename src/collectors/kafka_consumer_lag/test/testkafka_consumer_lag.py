@@ -24,7 +24,7 @@ class TestKafkaConsumerLagCollector(CollectorTestCase):
         self.assertTrue(KafkaConsumerLagCollector)
 
     @patch.object(Collector, 'publish')
-    def test_should_publish_gpu_stat(self, publish_mock):
+    def test_should_publish_kafka_consumer_lag_stats(self, publish_mock):
         output_mock = Mock(
             return_value=(self.getFixture('consumer_lag_check').getvalue(), '')
         )
@@ -33,10 +33,17 @@ class TestKafkaConsumerLagCollector(CollectorTestCase):
             'run_command',
             output_mock
         )
+        patch_collector = patch.object(
+            KafkaConsumerLagCollector,
+            'get_topics',
+            Mock(return_value=['nginx_access'])
+        )
 
+        patch_collector.start()
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()
+        patch_collector.stop()
 
         metrics = {
             'stage_nginx_access.nginx_access.0': 0,
@@ -59,7 +66,7 @@ class TestKafkaConsumerLagCollector(CollectorTestCase):
 
 
     @patch.object(Collector, 'publish')
-    def test_should_publish_gpu_stat(self, publish_mock):
+    def test_should_publish_kafka_consumer_lag_stats(self, publish_mock):
         self.collector.config.update({
             'zookeeper':
                 ['192.168.1.101:2181', '192.168.1.102:2181/dev/test-01']
@@ -72,10 +79,17 @@ class TestKafkaConsumerLagCollector(CollectorTestCase):
             'run_command',
             output_mock
         )
+        patch_collector = patch.object(
+            KafkaConsumerLagCollector,
+            'get_topics',
+            Mock(return_value=['nginx_access'])
+        )
 
+        patch_collector.start()
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()
+        patch_collector.stop()
 
         metrics = {
             'dev_test_01.stage_nginx_access.nginx_access.0': 0,
