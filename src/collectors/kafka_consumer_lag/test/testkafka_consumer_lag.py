@@ -56,7 +56,8 @@ class TestKafkaConsumerLagCollector(CollectorTestCase):
             'stage_nginx_access.nginx_access.7': 52,
             'stage_nginx_access.nginx_access.8': 0,
             'stage_nginx_access.nginx_access.9': 0,
-            'stage_nginx_access.nginx_access.10': 0
+            'stage_nginx_access.nginx_access.10': 0,
+            'stage_nginx_access.nginx_access.total': 54
         }
 
         self.setDocExample(collector=self.collector.__class__.__name__,
@@ -102,6 +103,7 @@ class TestKafkaConsumerLagCollector(CollectorTestCase):
             'dev_test_01.stage_nginx_access.nginx_access.7': 52,
             'dev_test_01.stage_nginx_access.nginx_access.8': 0,
             'dev_test_01.stage_nginx_access.nginx_access.9': 0,
-            'dev_test_01.stage_nginx_access.nginx_access.10': 0
+            'dev_test_01.stage_nginx_access.nginx_access.10': 0,
+            'dev_test_01.stage_nginx_access.nginx_access.total': 54
         }
         self.assertPublishedMany(publish_mock, metrics)
