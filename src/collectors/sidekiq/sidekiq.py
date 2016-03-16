@@ -148,7 +148,7 @@ class SidekiqCollector(diamond.collector.Collector):
         :return: Redis queue length
         """
         for queue in redis_client.smembers('queues'):
-            queue_length = redis_client.llen(queue)
+            queue_length = redis_client.llen('queue:%s' % queue)
             self.__publish(port, db, queue, queue_length)
 
     def __publish(self, port, db, queue, queue_length):
