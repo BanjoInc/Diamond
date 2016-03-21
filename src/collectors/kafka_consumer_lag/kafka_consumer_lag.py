@@ -32,13 +32,6 @@ class ConsumerMetric(object):
             prefix_keys = [self.consumer_group, self.topic, self.partition]
         return '.'.join(prefix_keys)
 
-    def get_total_lag_metric_name(self):
-        if self.cluster_name:
-            prefix_keys = [self.cluster_name, self.consumer_group, self.topic, 'total']
-        else:
-            prefix_keys = [self.consumer_group, self.topic, 'total']
-        return '.'.join(prefix_keys)
-
     def get_consumer_lag(self):
         return int(self.consumer_lag)
 
@@ -95,6 +88,19 @@ class KafkaConsumerLagCollector(diamond.collector.ProcessCollector):
             topics = [topics]
         return topics
 
+
+    def get_total_lag_metric_name(self, cluster_name, consumer_group, topic):
+        """
+        Return formatted total consumer lag metric name
+        :return:
+        """
+        if cluster_name:
+            prefix_keys = [cluster_name, consumer_group, topic, 'total']
+        else:
+            prefix_keys = [consumer_group, topic, 'total']
+        return '.'.join(prefix_keys)
+
+
     def collect(self):
         """
         Collect Kafka consumer lag metrics
@@ -109,7 +115,6 @@ class KafkaConsumerLagCollector(diamond.collector.ProcessCollector):
 
         topics = self.get_topics(zookeeper)
         for topic in topics:
-            consumer_metrics = []
             for consumer_group in consumer_groups:
                 try:
                     cmd = [
@@ -120,12 +125,13 @@ class KafkaConsumerLagCollector(diamond.collector.ProcessCollector):
                         topic,
                         '--zookeeper',
                         zookeeper
-                        ]
+                    ]
 
                     raw_output = self.run_command(cmd)
                     if raw_output is None:
                         return
 
+                    total_lag = 0
                     for i, output in enumerate(raw_output[0].split('\n')):
                         if i == 0:
                             continue
@@ -137,18 +143,11 @@ class KafkaConsumerLagCollector(diamond.collector.ProcessCollector):
                             continue
 
                         metric = ConsumerMetric(cluster_name, metrics)
+                        total_lag += metric.get_consumer_lag()
                         consumer_lag_metric_name = metric.get_consumer_lag_metric_name()
                         self.publish(consumer_lag_metric_name, metric.get_consumer_lag())
 
-                        consumer_metrics.append(metric)
+                    total_lag_metric_name = self.get_total_lag_metric_name(cluster_name, consumer_group, topic)
+                    self.publish(total_lag_metric_name, total_lag)
                 except Exception as e:
                     self.log.error(e)
-
-            if consumer_metrics:
-                total_lag = 0
-                total_lag_metric_name = None
-                for consumer_metric in consumer_metrics:
-                    if total_lag_metric_name is None:
-                        total_lag_metric_name = consumer_metric.get_total_lag_metric_name()
-                    total_lag += consumer_metric.get_consumer_lag()
-                self.publish(total_lag_metric_name, total_lag)
