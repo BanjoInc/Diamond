@@ -15,7 +15,7 @@ from kafka_consumer_lag import KafkaConsumerLagCollector
 class TestKafkaConsumerLagCollector(CollectorTestCase):
     def setUp(self):
         config = get_collector_config('KafkaConsumerLagCollector', {
-            'consumer_groups': ['test_group']
+            'consumer_groups': ['stage_nginx_access']
         })
 
         self.collector = KafkaConsumerLagCollector(config, None)
