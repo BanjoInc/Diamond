@@ -340,12 +340,14 @@ class MongoDBCollector(diamond.collector.Collector):
             return
         value = data[key]
         keys = prev_keys + [key]
-        keys = [x.replace(" ", "_").replace("-", ".") for x in keys]
+        keys = [x.replace(' ', '_').replace('/', '-').replace(',', '-').replace(':', '-') for x in keys]
         if not publishfn:
             publishfn = self.publish
         if isinstance(value, dict):
             for new_key in value:
                 self._publish_metrics(keys, new_key, value)
+        elif isinstance(value, bool):
+            publishfn('.'.join(keys), int(value))
         elif isinstance(value, int) or isinstance(value, float):
             publishfn('.'.join(keys), value)
         elif isinstance(value, long):
