@@ -1,0 +1,4 @@
+GROUP, TOPIC, PARTITION, CURRENT OFFSET, LOG END OFFSET, LAG, OWNER
+stage_nginx_access, nginx_access, 0, 15153806, 15153807, 1, _/192.168.1.100
+stage_nginx_access, nginx_access, 1, 15153806, 15153807, 10, _/192.168.1.100
+stage_nginx_access, nginx_access, 2, 15153806, 15153807, 52, _/192.168.1.100
