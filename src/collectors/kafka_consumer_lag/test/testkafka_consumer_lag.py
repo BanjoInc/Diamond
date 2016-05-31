@@ -9,6 +9,7 @@ from mock import patch, Mock
 from diamond.collector import Collector
 from kafka_consumer_lag import KafkaConsumerLagCollector
 
+
 ##########################################################################
 
 
@@ -63,8 +64,7 @@ class TestKafkaConsumerLagCollector(CollectorTestCase):
         self.setDocExample(collector=self.collector.__class__.__name__,
                            metrics=metrics,
                            defaultpath=self.collector.config['path'])
-        self.assertPublishedMany(publish_mock, metrics)\
-
+        self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
     def test_should_publish_kafka_consumer_lag_stats(self, publish_mock):

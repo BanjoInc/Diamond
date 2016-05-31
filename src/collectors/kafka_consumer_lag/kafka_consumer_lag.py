@@ -37,7 +37,6 @@ class ConsumerMetric(object):
 
 
 class KafkaConsumerLagCollector(diamond.collector.ProcessCollector):
-
     def get_default_config_help(self):
         collector = super(KafkaConsumerLagCollector, self)
         config_help = collector.get_default_config_help()
@@ -74,7 +73,7 @@ class KafkaConsumerLagCollector(diamond.collector.ProcessCollector):
                 '--list',
                 '--zookeeper',
                 zookeeper
-                ]
+            ]
 
             raw_output = self.run_command(cmd)
             if raw_output is None:
@@ -88,7 +87,6 @@ class KafkaConsumerLagCollector(diamond.collector.ProcessCollector):
             topics = [topics]
         return topics
 
-
     def get_total_lag_metric_name(self, cluster_name, consumer_group, topic):
         """
         Return formatted total consumer lag metric name
@@ -99,7 +97,6 @@ class KafkaConsumerLagCollector(diamond.collector.ProcessCollector):
         else:
             prefix_keys = [consumer_group, topic, 'total']
         return '.'.join(prefix_keys)
-
 
     def collect(self):
         """
