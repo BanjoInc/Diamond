@@ -34,17 +34,10 @@ class TestKafkaConsumerLagCollector(CollectorTestCase):
             'run_command',
             output_mock
         )
-        patch_collector = patch.object(
-            KafkaConsumerLagCollector,
-            'get_topics',
-            Mock(return_value=['nginx_access'])
-        )
 
-        patch_collector.start()
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()
-        patch_collector.stop()
 
         metrics = {
             'stage_nginx_access.nginx_access.0': 0,
@@ -80,17 +73,10 @@ class TestKafkaConsumerLagCollector(CollectorTestCase):
             'run_command',
             output_mock
         )
-        patch_collector = patch.object(
-            KafkaConsumerLagCollector,
-            'get_topics',
-            Mock(return_value=['nginx_access'])
-        )
 
-        patch_collector.start()
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()
-        patch_collector.stop()
 
         metrics = {
             'dev_test_01.stage_nginx_access.nginx_access.0': 0,
