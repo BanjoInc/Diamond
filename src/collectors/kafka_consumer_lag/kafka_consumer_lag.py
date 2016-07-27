@@ -48,7 +48,8 @@ class KafkaConsumerLagCollector(diamond.collector.ProcessCollector):
             'topics': 'Comma-separated list of consumer topics.',
             'zookeeper': 'ZooKeeper connect string.',
             'consumer_groups': 'Consumer groups',
-            'kafka_version': 'Kafka version (Default: 0.8.2.0)'
+            'kafka_version': 'Kafka version (Default: 0.8.2.0)',
+            'separator': 'Separator for kafka command'
         })
         return config_help
 
@@ -61,7 +62,8 @@ class KafkaConsumerLagCollector(diamond.collector.ProcessCollector):
             'path': 'kafka.ConsumerLag',
             'bin': '/opt/kafka/bin/kafka-run-class.sh',
             'zookeeper': 'localhost:2181',
-            'kafka_version': '0.8.2.0'
+            'kafka_version': '0.8.2.0',
+            'separator': None
         })
         return config
 
@@ -87,13 +89,16 @@ class KafkaConsumerLagCollector(diamond.collector.ProcessCollector):
 
         cluster_name = '-'.join(zookeeper.split('/')[1:]).replace('-', '_')
         is_0_9_above = LooseVersion(self.config.get('kafka_version')) >= LooseVersion('0.9.0.0')
+        is_0_10_above = LooseVersion(self.config.get('kafka_version')) >= LooseVersion('0.10.0.0')
 
         consumer_groups = self.get_consumer_groups(zookeeper, is_0_9_above)
 
-        if is_0_9_above:
-            separator = ', '
-        else:
-            separator = ' '
+        separator = self.config.get('separator')
+        if not separator:
+            if is_0_9_above and not is_0_10_above:
+                separator = ', '
+            else:
+                separator = ' '
 
         for consumer_group in consumer_groups:
             try:
