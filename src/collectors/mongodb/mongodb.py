@@ -21,6 +21,7 @@ MongoDBCollector.conf
     hosts = localhost:27017, alias1@localhost:27018, etc
 ```
 """
+import datetime
 
 import diamond.collector
 from diamond.collector import str_to_bool
@@ -73,7 +74,8 @@ class MongoDBCollector(diamond.collector.Collector):
                     ' Default is False',
             'replica': 'True to enable replica set logging. Reports health of'
                        ' individual nodes as well as basic aggregate stats.'
-                       ' Default is False'
+                       ' Default is False',
+            'replset_node_name': 'Identifier for reporting replset metrics. Default is _id'
         })
         return config_help
 
@@ -94,7 +96,8 @@ class MongoDBCollector(diamond.collector.Collector):
             'translate_collections': 'False',
             'collection_sample_rate': 1,
             'ssl': False,
-            'replica': False
+            'replica': False,
+            'replset_node_name': '_id'
         })
         return config
 
@@ -237,8 +240,8 @@ class MongoDBCollector(diamond.collector.Collector):
             'total_nodes': total_nodes
         }, prefix)
         for node in data['members']:
-            self._publish_dict_with_prefix(node,
-                                           prefix + ['node', str(node['_id'])])
+            node_name = str(node[self.config['replset_node_name']].spilt('.')[0])
+            self._publish_dict_with_prefix(node, prefix + ['node', node_name])
 
     def _publish_transformed(self, data, base_prefix):
         """ Publish values of type: counter or percent """
@@ -345,6 +348,8 @@ class MongoDBCollector(diamond.collector.Collector):
             publishfn('.'.join(keys), value)
         elif isinstance(value, long):
             publishfn('.'.join(keys), float(value))
+        elif isinstance(value, datetime.datetime):
+            publishfn('.'.join(keys), long(value.strftime('%s')))
 
     def _extract_simple_data(self, data):
         return {
