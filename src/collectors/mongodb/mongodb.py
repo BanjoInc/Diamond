@@ -240,7 +240,7 @@ class MongoDBCollector(diamond.collector.Collector):
             'total_nodes': total_nodes
         }, prefix)
         for node in data['members']:
-            node_name = str(node[self.config['replset_node_name']].spilt('.')[0])
+            node_name = str(node[self.config['replset_node_name']]).spilt('.')[0]
             self._publish_dict_with_prefix(node, prefix + ['node', node_name])
 
     def _publish_transformed(self, data, base_prefix):
