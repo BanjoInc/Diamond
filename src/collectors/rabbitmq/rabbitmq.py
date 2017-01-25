@@ -83,10 +83,16 @@ class RabbitMQCollector(diamond.collector.Collector):
             'host': 'Hostname and port to collect from',
             'user': 'Username',
             'password': 'Password',
+            'replace_arrow':
+            'A value to replace arrow in queue names by',
+            'replace_colon':
+            'A value to replace colon in queue names by',
             'replace_dot':
             'A value to replace dot in queue names and vhosts names by',
             'replace_slash':
             'A value to replace a slash in queue names and vhosts names by',
+            'replace_space':
+            'A value to replace space in queue names by',
             'queues': 'Queues to publish. Leave empty to publish all.',
             'vhosts':
             'A list of vhosts and queues for which we want to collect',
@@ -108,8 +114,11 @@ class RabbitMQCollector(diamond.collector.Collector):
             'host': 'localhost:55672',
             'user': 'guest',
             'password': 'guest',
+            'replace_arrow': False,
+            'replace_colon': False,
             'replace_dot': False,
             'replace_slash': False,
+            'replace_space': False,
             'queues_ignored': '',
             'cluster': False,
             'scheme': 'http',
@@ -233,6 +242,18 @@ class RabbitMQCollector(diamond.collector.Collector):
                         if self.config['replace_slash']:
                             queue_name = queue_name.replace(
                                 '/', self.config['replace_slash'])
+
+                        if self.config['replace_space']:
+                            queue_name = queue_name.replace(
+                                ' ', self.config['replace_space'])
+
+                        if self.config['replace_colon']:
+                            queue_name = queue_name.replace(
+                                ':', self.config['replace_colon'])
+
+                        if self.config['replace_arrow']:
+                            queue_name = queue_name.replace(
+                                '->', self.config['replace_arrow'])
 
                         name = '{0}.{1}'.format(prefix, queue_name)
 
