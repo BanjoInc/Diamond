@@ -17,13 +17,13 @@ class ConsumerMetric(object):
     def __init__(self, cluster_name, metrics):
         super(ConsumerMetric, self).__init__()
         self.cluster_name = cluster_name
-        self.consumer_group, \
         self.topic, \
         self.partition, \
         self.consumer_offset, \
         self.broker_offset, \
         self.consumer_lag, \
-        _ = metrics
+        _, \
+        self.consumer_group = metrics
 
     def get_consumer_lag_metric_name(self):
         prefix_keys = [self.consumer_group, self.topic, self.partition]
@@ -63,11 +63,11 @@ class KafkaNewConsumerLagCollector(diamond.collector.ProcessCollector):
         Collect Kafka consumer lag metrics
         :return:
         """
-        bootstrap_server = ','.join(self.config.get('bootstrap_server'))
+        bootstrap_server = self.config.get('bootstrap_server')
         cluster_name = self.config.get('cluster_name', '').replace('/', '_').replace('-', '_')
 
-        if not isinstance(bootstrap_server, list):
-            bootstrap_server = [bootstrap_server]
+        if isinstance(bootstrap_server, list):
+            bootstrap_server = ','.join(bootstrap_server)
 
         consumers = self.get_consumers(bootstrap_server)
         for consumer in consumers:
@@ -86,10 +86,11 @@ class KafkaNewConsumerLagCollector(diamond.collector.ProcessCollector):
                     continue
 
                 for i, output in enumerate(raw_output[0].split('\n')):
-                    if i == 0:
+                    if not output:
                         continue
-
-                    items = output.strip().split(', ')
+                    if 'CLIENT-ID' in output:
+                        continue
+                    items = output.strip().split(' ')
                     metrics = [item for item in items if item]
 
                     if not metrics:
@@ -117,5 +118,6 @@ class KafkaNewConsumerLagCollector(diamond.collector.ProcessCollector):
         if raw_output is None:
             return consumers
         for output in raw_output[0].split('\n'):
-            consumers.append(output)
+            if output:
+                consumers.append(output)
         return consumers
