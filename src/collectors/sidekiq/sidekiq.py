@@ -61,9 +61,12 @@ class SidekiqCollector(diamond.collector.Collector):
         :return: master ip and port
         """
         if sentinel_port and sentinel_name:
-            master = Sentinel([(host, sentinel_port)], socket_timeout=1)\
-                .discover_master(sentinel_name)
-            return master
+            try:
+                master = Sentinel([(host, sentinel_port)], socket_timeout=1)\
+                    .discover_master(sentinel_name)
+                return master
+            except Exception as ignored:
+                pass
         return host, port
 
     def get_redis_client(self):
