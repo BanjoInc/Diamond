@@ -243,7 +243,9 @@ class ElasticSearchCollector(diamond.collector.Collector):
     def collect_instance(self, alias, scheme, host, port):
         result = self._get(scheme, host, port, '_nodes/_local/stats', 'nodes')
         if not result:
+            self.publish('up', 0)
             return
+        self.publish('up', 1)
 
         metrics = {}
         node = result['nodes'].keys()[0]
