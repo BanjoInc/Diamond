@@ -176,6 +176,7 @@ class MongoDBCollector(diamond.collector.Collector):
                         read_preference=ReadPreference.SECONDARY,
                     )
             except Exception, e:
+                self.publish('up', 0)
                 self.log.error('Couldnt connect to mongodb: %s', e)
                 continue
 
@@ -184,11 +185,13 @@ class MongoDBCollector(diamond.collector.Collector):
                 try:
                     conn.admin.authenticate(user, passwd)
                 except Exception, e:
+                    self.publish('up', 0)
                     self.log.error(
                         'User auth given, but could not autheticate' +
                         ' with host: %s, err: %s' % (host, e))
                     return{}
 
+            self.publish('up', 1)
             data = conn.db.command('serverStatus')
             self._publish_transformed(data, base_prefix)
             if str_to_bool(self.config['simple']):
