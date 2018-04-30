@@ -300,7 +300,9 @@ class RabbitMQCollector(diamond.collector.Collector):
                 self._publish_metrics('', [], key, overview)
         except:
             self.log.exception('An error occurred collecting from RabbitMQ')
+            self.publish('up', 0)
             return {}
+        self.publish('up', 1)
 
     def _publish_metrics(self, name, prev_keys, key, data):
         """Recursively publish keys"""
