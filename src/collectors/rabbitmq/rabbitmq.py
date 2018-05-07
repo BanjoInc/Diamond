@@ -180,8 +180,10 @@ class RabbitMQCollector(diamond.collector.Collector):
                 content = client.get_nodes()
                 self.publish('cluster.nodes', len(content))
         except:
+            self.publish('up', 0)
             self.log.exception('Couldnt connect to rabbitmq')
             return {}
+        self.publish('up', 1)
 
     def get_queue_metrics(self, client, vhost, queues):
         # Allow the use of a asterix to glob the queues, but replace
@@ -300,9 +302,7 @@ class RabbitMQCollector(diamond.collector.Collector):
                 self._publish_metrics('', [], key, overview)
         except:
             self.log.exception('An error occurred collecting from RabbitMQ')
-            self.publish('up', 0)
             return {}
-        self.publish('up', 1)
 
     def _publish_metrics(self, name, prev_keys, key, data):
         """Recursively publish keys"""
