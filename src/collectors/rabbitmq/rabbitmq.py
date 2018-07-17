@@ -27,6 +27,7 @@ from urlparse import urljoin
 from urllib import quote
 import urllib2
 from base64 import b64encode
+import ssl
 
 try:
     import json
@@ -44,12 +45,15 @@ class RabbitMQClient(object):
         self.base_url = '%s://%s/api/' % (scheme, host)
         self.timeout = timeout
         self._authorization = 'Basic ' + b64encode('%s:%s' % (user, password))
+        self.ctx = ssl.create_default_context()
+        self.ctx.check_hostname = False
+        self.ctx.verify_mode = ssl.CERT_NONE
 
     def do_call(self, path):
         url = urljoin(self.base_url, path)
         req = urllib2.Request(url)
         req.add_header('Authorization', self._authorization)
-        return json.load(urllib2.urlopen(req, timeout=self.timeout))
+        return json.load(urllib2.urlopen(req, timeout=self.timeout, context=self.ctx))
 
     def get_all_vhosts(self):
         return self.do_call('vhosts')
