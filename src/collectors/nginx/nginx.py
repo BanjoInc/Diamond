@@ -56,13 +56,19 @@ For commercial nginx+:
 
 """
 
-import urllib2
-import re
-import diamond.collector
 import json
+import re
+import ssl
+import urllib2
+
+import diamond.collector
 
 
 class NginxCollector(diamond.collector.Collector):
+
+    def __init__(self, config=None, handlers=[], name=None, configfile=None):
+        super(NginxCollector, self).__init__(config, handlers, name, configfile)
+        self.ctx = ssl._create_unverified_context()
 
     def get_default_config_help(self):
         config_help = super(NginxCollector, self).get_default_config_help()
@@ -73,6 +79,7 @@ class NginxCollector(diamond.collector.Collector):
             'req_path': 'Path',
             'req_ssl': 'SSL Support',
             'req_host_header': 'HTTP Host header (required for SSL)',
+            'verify_ssl': 'Whether to verify SSL connection'
         })
         return config_help
 
@@ -84,6 +91,7 @@ class NginxCollector(diamond.collector.Collector):
         default_config['req_path'] = '/nginx_status'
         default_config['req_ssl'] = False
         default_config['req_host_header'] = None
+        default_config['verify_ssl'] = True
         default_config['path'] = 'nginx'
         return default_config
 
@@ -106,7 +114,7 @@ class NginxCollector(diamond.collector.Collector):
             elif totalConnectionsRE.match(l):
                 m = totalConnectionsRE.match(l)
                 req_per_conn = float(m.group('req')) / \
-                    float(m.group('acc'))
+                               float(m.group('acc'))
                 self.publish_counter('conn_accepted',
                                      int(m.group('conn')),
                                      precision)
@@ -182,8 +190,8 @@ class NginxCollector(diamond.collector.Collector):
             for peer in status[upstream]['peers']:
 
                 peer_prefix = '%s.peers.%s' % (prefix, re.sub(':', "-",
-                                               re.sub('\.', '_',
-                                                      peer['server'])))
+                                                              re.sub('\.', '_',
+                                                                     peer['server'])))
 
                 self.publish_gauge('%s.active' % peer_prefix, peer['active'])
                 if 'max_conns' in peer:
@@ -217,9 +225,13 @@ class NginxCollector(diamond.collector.Collector):
                                 int(self.config['req_port']),
                                 self.config['req_path'])
 
-        req = urllib2.Request(url=url, headers=headers)
         try:
-            handle = urllib2.urlopen(req)
+            if str(self.config['verify_ssl'].lower()) == 'false':
+                req = urllib2.Request(url=url)
+                handle = urllib2.urlopen(req, context=self.ctx)
+            else:
+                req = urllib2.Request(url=url, headers=headers)
+                handle = urllib2.urlopen(req)
 
             # Test for json payload; indicates nginx+
             if handle.info().gettype() == 'application/json':
@@ -228,8 +240,10 @@ class NginxCollector(diamond.collector.Collector):
             # Plain payload; indicates open source nginx
             else:
                 self.collect_nginx(handle)
-
+            self.publish('up', 1)
         except IOError, e:
+            self.publish('up', 0)
             self.log.error("Unable to open %s" % url)
         except Exception, e:
+            self.publish('up', 0)
             self.log.error("Unknown error opening url: %s", e)
